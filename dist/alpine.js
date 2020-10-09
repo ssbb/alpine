@@ -647,7 +647,7 @@
         // If we are explicitly binding a string to the :value, set the string,
         // If the value is a boolean, leave it alone, it will be set to "on"
         // automatically.
-        if (typeof value !== 'boolean' && ![null, false, undefined].includes(value) && attrType === 'bind') {
+        if (typeof value !== 'boolean' && ![null, undefined].includes(value) && attrType === 'bind') {
           el.value = String(value);
         } else if (attrType !== 'bind') {
           if (Array.isArray(value)) {
@@ -1433,7 +1433,11 @@
       this.unobservedData.$watch = (property, callback) => {
         if (!this.watchers[property]) this.watchers[property] = [];
         this.watchers[property].push(callback);
-      }; // Register custom magic properties.
+      };
+      /* MODERN-ONLY:START */
+      // We remove this piece of code from the legacy build.
+      // In IE11, we have already defined our helpers at this point.
+      // Register custom magic properties.
 
 
       Object.entries(Alpine.magicProperties).forEach(([name, callback]) => {
@@ -1443,6 +1447,8 @@
           }
         });
       });
+      /* MODERN-ONLY:END */
+
       this.showDirectiveStack = [];
       this.showDirectiveLastElement;
       componentForClone || Alpine.onBeforeComponentInitializeds.forEach(callback => callback(this));
@@ -1807,19 +1813,19 @@
       });
     },
     discoverComponents: function discoverComponents(callback) {
-      const rootEls = document.querySelectorAll('[x-data]');
+      const rootEls = document.querySelectorAll("[x-data]");
       rootEls.forEach(rootEl => {
         callback(rootEl);
       });
     },
     discoverUninitializedComponents: function discoverUninitializedComponents(callback, el = null) {
-      const rootEls = (el || document).querySelectorAll('[x-data]');
+      const rootEls = (el || document).querySelectorAll("[x-data]");
       Array.from(rootEls).filter(el => el.__x === undefined).forEach(rootEl => {
         callback(rootEl);
       });
     },
     listenForNewUninitializedComponentsAtRunTime: function listenForNewUninitializedComponentsAtRunTime(callback) {
-      const targetNode = document.querySelector('body');
+      const targetNode = document.querySelector("body");
       const observerOptions = {
         childList: true,
         attributes: true,
@@ -1835,7 +1841,7 @@
               if (node.nodeType !== 1) return; // Discard any changes happening within an existing component.
               // They will take care of themselves.
 
-              if (node.parentElement && node.parentElement.closest('[x-data]')) return;
+              if (node.parentElement && node.parentElement.closest("[x-data]")) return;
               this.discoverUninitializedComponents(el => {
                 this.initializeComponent(el);
               }, node.parentElement);
@@ -1859,9 +1865,7 @@
       }
     },
     clone: function clone(component, newEl) {
-      if (!newEl.__x) {
-        newEl.__x = new Component(newEl, component);
-      }
+      newEl.__x = new Component(newEl, component.getUnobservedData());
     },
     addMagicProperty: function addMagicProperty(name, callback) {
       this.magicProperties[name] = callback;
