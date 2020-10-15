@@ -106,7 +106,7 @@ const Alpine = {
     },
 
     clone: function clone(component, newEl) {
-        newEl.__x = new Component(newEl, component.getUnobservedData());
+        newEl.__x = new Component(newEl, component);
     },
 
     addMagicProperty: function (name, callback) {
